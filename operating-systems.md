@@ -1,23 +1,6 @@
 # Operating Systems
 I really like these [Notes](https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/) but [GeeksforGeeks](https://www.geeksforgeeks.org/operating-systems/) is also great.
 
-## TODO
-+ Types of OS
-+ Multilevel queue
-+ multilevel feedback queue
-+ paging problems
-+ belady's anomaly
-+ thrashing
-+ TLB and Effective access time.
-+ standard semaphore problems.
-+ preemptive vs non-preemptive kernels.
-
-+ Types of OS
-+ Threads vs processes
-+ Process scheduling
-+ Syncronization
-+ Deadlock
-+ Bankers algorithm
 ## [Process](https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/3_Processes.html)
 Checklist:
 + Process
@@ -177,4 +160,11 @@ Mutual Exclusion is satisfied but bounded wait is not guaranteed.
 ## Questions
 + preemptive vs non-preemptive kernels.
 + [Difference between mutex and semaphore](https://www.geeksforgeeks.org/mutex-vs-semaphore/)
-
++ belady's anomaly
++ Types of OS
++ paging problems
++ thrashing
++ TLB and Effective access time.
++ standard semaphore problems.
++ preemptive vs non-preemptive kernels.
++ Threads vs processes
