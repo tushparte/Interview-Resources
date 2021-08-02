@@ -1,0 +1,205 @@
+#+TITLE: Bit Manipulation
+
+** Tricks
++ x & -x gives a number with only the right most bit in x set.
++ x & (x-1) will clear the lowest set bit of x
++ x & ~(x-1) extracts the lowest set bit of x (all others are clear). Pretty patterns when applied to a linear sequence.
++ x & (x + (1 << n)) = x, with the run of set bits (possibly length 0) starting at bit n cleared.
++ x & ~(x + (1 << n)) = the run of set bits (possibly length 0) in x, starting at bit n.
++ x | (x + 1) = x with the lowest cleared bit set.
++ x | ~(x + 1) = extracts the lowest cleared bit of x (all others are set).
++ x | (x - (1 << n)) = x, with the run of cleared bits (possibly length 0) starting at bit n set.
++ x | ~(x - (1 << n)) = the lowest run of cleared bits (possibly length 0) in x, starting at bit n are the only clear bits.
++ 0xAAAAAAAA: number with 1s at even positions
++ 0x55555555: number with 1s at odd positions
+
+** Basic Operations
+*** Get Bit: get ith bit :
+#+begin_src c
+int getBit(int x, int i) {
+  return (x & (1 << (i-1)) == 1;
+}
+#+end_src
+*** Set Bit: set ith bit
+#+begin_src c
+int setBit(int x, int i) {
+  x = x | (1 << (i-1));
+  return x;
+}
+#+end_src
+*** Clear Bit: clear ith bit
+#+begin_src c
+int clearBit(int x, int i) {
+  if (i <= 0) return x;
+  x = (x & (~(1 << (i-1))));
+  return x;
+}
+#+end_src
+*** Update Bit: set ith bit to a value v.
+
+** Some interesting problems
+*** Add two numbers without + sign.
+#+begin_src c
+int add(int a, int b) {
+  while (b) {
+    int c = a & b;
+    a = a ^ b;
+    b = (unsigned) c << 1;
+  }
+  return a;
+}
+#+end_src
+
+We can use XOR operator to add two numbers. It works perfectly when there are
+no carry operations, but fails when there are. A simple solution to deal with
+carry is to use AND operator. Why ? because, the only case when a carry is
+generated is when both bits are 1, not when 0,0 or 0,1 or 1,0. AND gives us 1
+when both the operands are 1. When you compute the carry, you need to add it to
+the immedeate left bit, hence b is assigned as carry left-shifted by 1 bit.
+
+*** Multiply two numbers without * sign.
+#+begin_src c
+int multiply(int a, int b) {
+  int res = 0;
+  while (b) {
+    if (b & 1)
+      res += a;
+    a <<= 1;
+    b >>= 1;
+  }
+  return res;
+}
+#+end_src
+
+The basic idea behind the solution is that a*b is same as (a*2)*(b/2). There is
+a special case when b is odd, in that case a*b = (a*2)*(b/2)+a. The same idea is
+implemented int he source code above, when b is odd, we add a to the result so
+that b becomes even and then double a, half b.
+
+What we need to understand above is that we update result only when b is odd.
+The same idea is used in iterative binary exponentiation in the section below.
+
+*** Iterative Binary exponentiation
+#+begin_src c
+long long binaryExp(int a, int b) {
+  long long res = 0;
+  while (b) {
+    if (b & 1)
+      res *= a;
+    a = a * a;
+    b = b >> 1;
+  }
+  return res;
+}
+#+end_src
+
+*** Compute x / y
+#+begin_src c
+unsigned divide(unsigned x, unsigned y) {
+  unsigned result = 0;
+  int power = 32;
+  unsigned long long y_power = static_cast<unsigned long long> (y) << power;
+  while (x >= y) {
+    while (y_power > x) {
+      y_power >>= 1;
+      --power;
+    }
+    result += 1U << power;
+    x -= y_power;
+  }
+  return result;
+}
+#+end_src
+
+#+begin_src c++
+int divide(long long dividend, long long divisor) {
+  int sign = ((dividend < 0) ^
+              (divisor < 0)) ? -1 : 1;
+
+  dividend = abs(dividend);
+  divisor = abs(divisor);
+
+  long long quotient = 0, temp = 0;
+
+  for (int i = 31; i >= 0; --i) {
+
+    if (temp + (divisor << i) <= dividend) {
+      temp += divisor << i;
+      quotient |= 1LL << i;
+    }
+  }
+
+  return sign * quotient;
+}
+#+end_src
+Refer: Elements of Programming Interviews, page 53 for explaination.
+
+*** Check if all bits of a number are set
+#+begin_src cpp
+bool check(int n) {
+  if (n == 0)
+    return false;
+  if (((n + 1) & n) == 0)
+    return true;
+  return false;
+}
+#+end_src
+
+**** Explaination
+If all bits of a number are set, adding one to that number will result in a
+perfect power of 2. So the problem reduces to checking whether (n + 1) is a
+perfect power of 2. Example: (1000 & 0100 = 0) -> 8 & 7 = 0.
+
+*** Find the position of the most significant set bit.
+Just take log2 of the number.
+
+*** Check if the number is a power of 2
+**** Method 1
+#+begin_src cpp
+bool check (int n) {
+  return (ceil(log2(n)) == floor(log2(n)));
+}
+#+end_src
+
+**** Method 2
+#+begin_src cpp
+bool check (int n) {
+  return __builtin_popcount(n) == 1;
+}
+#+end_src
+
+**** Method 3
+A perfect power of 2 contains only 1 set bit. Subtracting 1 from a perfect power
+of 2, results in a number with all bits set except the set bit in the original
+number. Example: 8(1000) and 7(0111). So given a number n, if n is a perfect
+power of 2, the AND operation between n and n-1 results in 0. The only edge case
+is n being 0.
+
+#+begin_src cpp
+bool check (int n) {
+  return n and ((n & (n - 1)) == 0);
+}
+#+end_src
+*** Find first set bit
+**** Algorithm
+1. Take two's compliment of the given number as all bits are inverted except the
+   first set bit from the right to left.
+2. Do a AND with the original number, this will return a number with only the
+   required set bit.
+3. Return log2 of the number + 1.
+
+#+begin_src cpp
+int firstSetBit(int n) {
+  return log2(n & -n) + 1;
+}
+#+end_src
+
+Example: take 12 (1100)
+- two's compliment (0100)
+- AND with original number (0100)
+- log2(4) = 2
+- answer = 3
+
+**** Another method
+ffs() function returns the index of the least significant set bit.
+
